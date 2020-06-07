@@ -1,16 +1,15 @@
 #!/usr/bin/env bash
 
 # get status variable
-status_right=$(tmux show-option -gqv 'status-right')
+init_status_right=$(tmux show-option -gqv 'status-right')
 
-# set init message
-#status_right="Starting new pomodoro... ${status_right}"
-#tmux set-option -g status-right "$status_right"
+# start a pomodoro timer
+status_right="Starting new pomodoro... ${init_status_right}"
+tmux set-option -g status-right "$status_right"
 sleep 1
 
-# clear out last timer value
-#status_right=${status_right//Starting new pomodoro... /}
-status_right=${status_right//Working [0-9][0-9]:[0-9][0-9] remaining/}
+# clear out status
+tmux set-option -g status-right "$init_status_right"
 
 for ((i=1500; i>=1; i--))
 do
@@ -20,23 +19,38 @@ do
     seconds=$(($i % 60))
   fi
   
-  countdown_string="Working $(($i / 60)):$seconds remaining"
+  countdown_string="Working $(($i / 60)):$seconds remaining "
  
-  # clear out last timer value
-  status_right=${status_right//Working [0-9][0-9]:[0-9][0-9] remaining/}
+  # swap out time string
+  status_right=${init_status_right}
   status_right="${countdown_string}${status_right}"
- 
+
   # set new tmux status var
   tmux set-option -g status-right "$status_right"
-  #eval tmux show-option -gqv status-right # show the result in stdout
 
   sleep 1
 done
 
-echo "Woo! Pomodoro complete."
+# Pomodoro Complete
+tmux set-option -g status-right "$init_status_right"
+done_string="Pomodoro complete! "
+status_right=${done_string}${status_right}
+tmux set-option -g status-right "$status_right"
+sleep 2
+tmux set-option -g status-right "$init_status_right"
 
 for((i=500; i>=1; i--))
 do
-  echo "Break time!" $(($i / 60)):$(($i % 60)) "remaining "
+  countdown_string="Break time! $(($i / 60)):$(($i % 60)) remaining "
+
+  # swap out time string
+  status_right=${init_status_right}
+  status_right="${countdown_string}${status_right}"
+
+  # set new tmux status var
+  tmux set-option -g status-right "$status_right"
+
   sleep 1
 done
+
+tmux set-option -g status-right "$init_status_right"
